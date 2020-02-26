@@ -19,16 +19,19 @@ ABlackHole::ABlackHole()
 	MeshComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 	MeshComponent->SetGenerateOverlapEvents(false);
 
-	GravitySphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	GravitySphere->SetCollisionObjectType(ECC_WorldStatic);
 	GravitySphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	GravitySphere->SetCollisionResponseToAllChannels(ECR_Overlap);
+	GravitySphere->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
 	GravitySphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 
-	DestroySphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	DestroySphere->SetCollisionObjectType(ECC_WorldStatic);
 	DestroySphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	DestroySphere->SetCollisionResponseToAllChannels(ECR_Overlap);
-	DestroySphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+	DestroySphere->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
+	DestroySphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);	
 
+	DestroySphere->OnComponentBeginOverlap.AddDynamic(this, &ABlackHole::OnDestroySphereHit);
 	
 }
 
@@ -39,26 +42,25 @@ void ABlackHole::BeginPlay()
 	
 }
 
+void ABlackHole::OnDestroySphereHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor)
+		OtherActor->Destroy();
+}
+
 // Called every frame
 void ABlackHole::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	TArray<AActor*> OverlappedActors;
-	GetOverlappingActors(OverlappedActors);
-	for (auto elem : OverlappedActors)
+	TArray<UPrimitiveComponent*> OverlappedComponents;
+	GravitySphere->GetOverlappingComponents(OverlappedComponents);
+	for (auto elem : OverlappedComponents)
 	{
-		UStaticMeshComponent* MeshComponent=Cast<UStaticMeshComponent>(elem->GetComponentByClass(UMeshComponent::StaticClass()));
-		if(MeshComponent)
+		if(elem && elem->IsSimulatingPhysics())
 		{
-			MeshComponent->AddRadialForce(GetActorLocation(), GravitySphere->GetScaledSphereRadius(), BlackHoleStrength, ERadialImpulseFalloff::RIF_Constant, false);
+			elem->AddRadialForce(GetActorLocation(), GravitySphere->GetScaledSphereRadius(), BlackHoleStrength, ERadialImpulseFalloff::RIF_Constant, false);
 		}
-	}
-	OverlappedActors.Empty();
-	DestroySphere->GetOverlappingActors(OverlappedActors);
-	OverlappedActors.RemoveAt(OverlappedActors.Find(this));
-	for (auto elem : OverlappedActors)
-	{
-		elem->Destroy();
 	}
 }
 
