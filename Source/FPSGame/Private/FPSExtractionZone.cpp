@@ -47,6 +47,7 @@ void AFPSExtractionZone::OnHandleOverlap(UPrimitiveComponent* OverlappedComponen
 		}
 	}else
 	{
-		UGameplayStatics::PlaySound2D(this, ObjectiveMissingSound);
+		if(ObjectiveMissingSound)
+			UGameplayStatics::PlaySound2D(this, ObjectiveMissingSound);
 	}
 }

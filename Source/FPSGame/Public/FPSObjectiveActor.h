@@ -25,7 +25,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 		USphereComponent*  Sphere;
 	UPROPERTY(EditAnywhere, Category = "Components")
-	UParticleSystem* PickupFX;
+		UParticleSystem* PickupFX;
 
 	void PlayEffects();
 public:	

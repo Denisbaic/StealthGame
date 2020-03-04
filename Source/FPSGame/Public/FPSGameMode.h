@@ -14,6 +14,8 @@ class AFPSGameMode : public AGameModeBase
 protected:
 	UPROPERTY(EditDefaultsOnly,Category="Spectating")
 	TSubclassOf<AActor> SpectatingViewpointCLass;
+	UPROPERTY(EditDefaultsOnly, Category = "Spectating")
+		float BlendToCamera = 1.f;
 public:
 
 	AFPSGameMode();
