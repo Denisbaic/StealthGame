@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Navigation/PathFollowingComponent.h"
 #include "FPSAIGuard.generated.h"
+struct FAIRequestID;
 UENUM(BlueprintType)
 enum  class EAIState:uint8
 {
@@ -38,6 +40,8 @@ protected:
 	EAIState GuardState;
 
 
+	UPROPERTY(EditAnywhere, Category = "Components")
+		bool bCanPatrol;
 
 	UFUNCTION(BlueprintImplementableEvent, Category="AI")
 		void OnStateChanged(EAIState NewState);
@@ -45,11 +49,15 @@ public:
 
 	void SetGuardState(EAIState NewState);
 	EAIState GetGuardState();
-	UPROPERTY(EditInstanceOnly, Category = "Components")
+	UPROPERTY(EditInstanceOnly, Category = "Components", meta=(EditCondition="bCanPatrol"))
 		AActor* TargetActor1;
-	UPROPERTY(EditInstanceOnly, Category = "Components")
+	UPROPERTY(EditInstanceOnly, Category = "Components", meta = (EditCondition = "bCanPatrol"))
 		AActor* TargetActor2;
+
+	AActor* PointActor;
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	UFUNCTION()
+	void ChooseNextPoint(FAIRequestID RequestID, EPathFollowingResult::Type Result);
 
 };

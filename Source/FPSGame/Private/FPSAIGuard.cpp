@@ -7,8 +7,11 @@
 #include "TimerManager.h"
 #include "FPSGameMode.h"
 #include "Engine/World.h"
+#include "AI/NavigationSystemBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
-
+#include "NavigationSystem.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "AIController.h"
 // Sets default values
 AFPSAIGuard::AFPSAIGuard()
 {
@@ -18,6 +21,7 @@ AFPSAIGuard::AFPSAIGuard()
 	PawnSensingComponent->OnSeePawn.AddDynamic(this, &AFPSAIGuard::OnPawnSeen);
 	PawnSensingComponent->OnHearNoise.AddDynamic(this, &AFPSAIGuard::OnPawnHeard);
 	GuardState = EAIState::Idle;
+	bCanPatrol = false;
 }
 
 // Called when the game starts or when spawned
@@ -25,6 +29,12 @@ void AFPSAIGuard::BeginPlay()
 {
 	Super::BeginPlay();
 	OriginalRotation=GetActorRotation();
+	if(bCanPatrol)
+	{
+		Cast<AAIController>(GetController())->ReceiveMoveCompleted.AddDynamic(this, &AFPSAIGuard::ChooseNextPoint);
+		PointActor = TargetActor1;
+		UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), PointActor);
+	}
 }
 
 void AFPSAIGuard::ResetOrientation()
@@ -44,7 +54,14 @@ void AFPSAIGuard::SetGuardState(EAIState NewState)
 	GuardState = NewState;
 
 	OnStateChanged(NewState);
-	GetController()->StopMovement();
+	if(NewState==EAIState::Idle)
+	{
+		UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), PointActor);
+	}
+	else if(NewState==EAIState::Suspicious)
+	{
+		GetController()->StopMovement();
+	}
 }
 
 EAIState AFPSAIGuard::GetGuardState()
@@ -57,8 +74,27 @@ void AFPSAIGuard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	//SetActorRotation(GetCharacterMovement()->GetLastUpdateVelocity().GetSafeNormal().Rotation());
-	SetActorRotation(GetVelocity().GetSafeNormal().Rotation());
+	if(GuardState!=EAIState::Suspicious)
+		SetActorRotation(GetVelocity().GetSafeNormal().Rotation());
 }
+
+void AFPSAIGuard::ChooseNextPoint(FAIRequestID RequestID, EPathFollowingResult::Type Result)
+{
+	if(Result!=EPathFollowingResult::Type::Success)
+	{
+		return;
+	}
+	if (PointActor == TargetActor1)
+	{
+		PointActor = TargetActor2;
+	}
+	else
+	{
+		PointActor = TargetActor1;
+	}
+	UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), PointActor);
+}
+
 
 void AFPSAIGuard::OnPawnSeen(APawn* SeenPawn)
 {
