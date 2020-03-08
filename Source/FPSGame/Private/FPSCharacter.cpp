@@ -7,6 +7,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/PawnNoiseEmitterComponent.h"
+#include "GuardMovementComponent.h"
 
 AFPSCharacter::AFPSCharacter()
 {
@@ -29,6 +30,9 @@ AFPSCharacter::AFPSCharacter()
 	GunMeshComponent->SetupAttachment(Mesh1PComponent, "GripPoint");
 
 	NoiseEmitterComponent = CreateDefaultSubobject<UPawnNoiseEmitterComponent>(TEXT("NoiseEmitter"));
+
+	//CharacterMovement = CreateDefaultSubobject<UGuardMovementComponent>(TEXT("CharacterMovement"));
+	
 }
 
 

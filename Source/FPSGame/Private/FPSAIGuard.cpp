@@ -7,6 +7,7 @@
 #include "TimerManager.h"
 #include "FPSGameMode.h"
 #include "Engine/World.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AFPSAIGuard::AFPSAIGuard()
@@ -43,12 +44,20 @@ void AFPSAIGuard::SetGuardState(EAIState NewState)
 	GuardState = NewState;
 
 	OnStateChanged(NewState);
+	GetController()->StopMovement();
+}
+
+EAIState AFPSAIGuard::GetGuardState()
+{
+	return GuardState;
 }
 
 // Called every frame
 void AFPSAIGuard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	//SetActorRotation(GetCharacterMovement()->GetLastUpdateVelocity().GetSafeNormal().Rotation());
+	SetActorRotation(GetVelocity().GetSafeNormal().Rotation());
 }
 
 void AFPSAIGuard::OnPawnSeen(APawn* SeenPawn)

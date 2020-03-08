@@ -24,6 +24,7 @@ protected:
 	virtual void BeginPlay() override;
 	UPROPERTY(VisibleAnywhere,Category="Components")
 		class UPawnSensingComponent* PawnSensingComponent;
+
 	UFUNCTION()
 		void OnPawnSeen(APawn* SeenPawn);
 	UFUNCTION()
@@ -36,11 +37,18 @@ protected:
 
 	EAIState GuardState;
 
-	void SetGuardState(EAIState NewState);
+
 
 	UFUNCTION(BlueprintImplementableEvent, Category="AI")
 		void OnStateChanged(EAIState NewState);
-public:	
+public:
+
+	void SetGuardState(EAIState NewState);
+	EAIState GetGuardState();
+	UPROPERTY(EditInstanceOnly, Category = "Components")
+		AActor* TargetActor1;
+	UPROPERTY(EditInstanceOnly, Category = "Components")
+		AActor* TargetActor2;
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
