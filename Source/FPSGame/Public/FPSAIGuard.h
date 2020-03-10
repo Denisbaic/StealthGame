@@ -36,18 +36,21 @@ protected:
 	UFUNCTION()
 	void ResetOrientation();
 	FTimerHandle TimerHandle_ResetOrientation;
+	
+	UPROPERTY(ReplicatedUsing = OnRep_GuardState)
+		EAIState GuardState;
 
-	EAIState GuardState;
-
-
+	UFUNCTION()
+		void OnRep_GuardState();
 	UPROPERTY(EditAnywhere, Category = "Components")
 		bool bCanPatrol;
 
 	UFUNCTION(BlueprintImplementableEvent, Category="AI")
 		void OnStateChanged(EAIState NewState);
+	void SetGuardState(EAIState NewState);
 public:
 
-	void SetGuardState(EAIState NewState);
+	
 	EAIState GetGuardState();
 	UPROPERTY(EditInstanceOnly, Category = "Components", meta=(EditCondition="bCanPatrol"))
 		AActor* TargetActor1;

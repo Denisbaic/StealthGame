@@ -12,6 +12,7 @@
 #include "NavigationSystem.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "AIController.h"
+#include "UnrealNetwork.h"
 // Sets default values
 AFPSAIGuard::AFPSAIGuard()
 {
@@ -45,6 +46,12 @@ void AFPSAIGuard::ResetOrientation()
 	SetGuardState(EAIState::Idle);
 }
 
+void AFPSAIGuard::OnRep_GuardState()
+{
+	OnStateChanged(GuardState);
+
+}
+
 void AFPSAIGuard::SetGuardState(EAIState NewState)
 {
 	if(GuardState==NewState)
@@ -52,15 +59,18 @@ void AFPSAIGuard::SetGuardState(EAIState NewState)
 		return;
 	}
 	GuardState = NewState;
+	OnRep_GuardState();
 
-	OnStateChanged(NewState);
-	if(NewState==EAIState::Idle)
+	if(bCanPatrol)
 	{
-		UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), PointActor);
-	}
-	else if(NewState==EAIState::Suspicious)
-	{
-		GetController()->StopMovement();
+		if (NewState == EAIState::Idle)
+		{
+			UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), PointActor);
+		}
+		else if (NewState == EAIState::Suspicious)
+		{
+			GetController()->StopMovement();
+		}
 	}
 }
 
@@ -126,4 +136,11 @@ void AFPSAIGuard::OnPawnHeard(APawn* Instigator, const FVector& Location, float 
 	GetWorldTimerManager().ClearTimer(TimerHandle_ResetOrientation);
 	GetWorldTimerManager().SetTimer(TimerHandle_ResetOrientation, this, &AFPSAIGuard::ResetOrientation,3.0f);
 	SetGuardState(EAIState::Suspicious);
+}
+
+void AFPSAIGuard::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFPSAIGuard, GuardState);
 }
